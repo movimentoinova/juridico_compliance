@@ -1,6 +1,6 @@
 [theme]
 primaryColor="#2F3136"
-backgroundColor="#444654"
-secondaryBackgroundColor="#2F3136"
-textColor="ffffff"
+backgroundColor="rgba(68, 70, 84, 0.8)" 
+secondaryBackgroundColor="rgba(47, 49, 54, 0.8)" 
+textColor="rgba(255, 255, 255, 1)"  # Fully opaque white text
 font="sans serif"
