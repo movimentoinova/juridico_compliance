@@ -6,7 +6,7 @@ import redis
 import uuid
 import base64
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # Load environment variables
 load_dotenv()
@@ -122,6 +122,25 @@ st.markdown(f"""
     </style>
 """, unsafe_allow_html=True)
 
+# Function to clean up chat sessions older than 15 days
+def cleanup_old_sessions():
+    try:
+        chat_sessions = redis_client.smembers("chat_sessions")
+        for session in chat_sessions:
+            session_data = json.loads(session)
+            session_timestamp = datetime.fromisoformat(session_data["timestamp"])
+            if datetime.now() - session_timestamp > timedelta(days=15):
+                # Remove the chat session metadata
+                redis_client.srem("chat_sessions", session)
+                # Remove the actual chat history
+                redis_client.delete(session_data["id"])
+                st.write(f"Deleted old session: {session_data['id']}")
+    except redis.RedisError as e:
+        st.error(f"Error cleaning up old sessions: {e}")
+
+# Perform periodic cleanup
+cleanup_old_sessions()
+
 # Sidebar for chat history
 with st.sidebar:
     st.header("Histórico de Conversas")
@@ -192,4 +211,3 @@ if prompt:
     # Save chat session if it's a new conversation
     if len(st.session_state.messages) == 2:  # First user message and first assistant response
         save_chat_session(st.session_state.selected_session_id, prompt, str(datetime.now()))
-
